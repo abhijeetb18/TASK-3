@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Collaborative Editor</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+</head>
+<body>
+    <h1>Collaborative Editor</h1>
+    <textarea id="document" rows="20" cols="80"></textarea>
+
+    <script>
+        var socket = new SockJS('/ws');
+        var stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/document', function (message) {
+                document.getElementById('document').value = message.body;
+            });
+        });
+
+        document.getElementById('document').addEventListener('input', function (event) {
+            var content = event.target.value;
+            stompClient.send("/app/edit", {}, content);
+        });
+    </script>
+</body>
+</html>
